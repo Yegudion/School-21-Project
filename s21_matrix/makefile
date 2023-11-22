@@ -1,37 +1,35 @@
-CC=gcc
-CFLAGS=-std=c11 -Wall -Werror -Wextra -g
-SOURCES=s21_matrix.c s21_arithmetics.c s21_comparison.c s21_support_functions.c s21_transformation.c
-OBJECTS=$(SOURCES:.c=.o)
-OS = $(shell uname)
-TEST_FILE_NAME = s21_test_matrix.c
+FLAGS = -Wall -Wextra -Werror -Wuninitialized -std=c11 
+TESTFLAGS = -lcheck --coverage 
+SOURCES_FUN:=$(wildcard s21_*.c)
 
-ifeq ($(OS), Linux)
-	TEST_LIBS=-lcheck -lsubunit
+ifeq ($(shell uname), Linux)
+TESTFLAGS += -lm -lsubunit
 else
-	TEST_LIBS=-lcheck
+TESTFLAGS += -fprofile-arcs -ftest-coverage
 endif
 
 all: s21_matrix.a
+	rm -rf *.o
 
-s21_matrix.a: clean $(OBJECTS)
-	ar -rcs s21_matrix.a $(OBJECTS)
-	rm -f *.o
+s21_matrix.a:
+	gcc $(FLAGS) -c $(SOURCES_FUN)
+	ar rcs s21_matrix.a *.o
+	@ranlib s21_matrix.a
 
-test: $(TEST_FILE_NAME) s21_matrix.a
-	$(CC) $(CFLAGS) $(TEST_FILE_NAME) $(SOURCES) -o test $(TEST_LIBS) -L. --coverage
-	./test
+test: s21_matrix.a
+	@gcc *.c s21_matrix.a $(TESTFLAGS) -o testing 
+	./testing
 
-style: clean
-	clang-format --style=google -i s21_*.c *.h
-	clang-format --style=google -n s21_*.c *.h
+gcov_report:
+	@gcc $(TESTFLAGS) *.c ./test/*.c -o s21_lib_test $(TESTFLAGS) ./s21_lib_test
+	@gcov -f $(SOURCES_FUN)
+	@lcov --no-external -t test -o coverage.info -c -d . 
+	@genhtml -o html_report coverage.info
+	@open html_report/index.html
 
-leaks: test
-	CK_FORK=no leaks --atExit --list -- ./test
-
-gcov_report: test
-	lcov -t "test" -o test.info -c -d .
-	genhtml -o report test.info
-	open report/index.html
+lint:
+	@clang-format --style=Google -i *.c *.h test/*.c test/*.h
 
 clean:
-	rm -rf *.o *.a *.so *.gcda *.gcno *.gch rep.info *.html *.css test report *.txt test.info test.dSYM proj
+	@rm -rf *.o testing.c testing *.a *.gcno *.gcda *.gcov *.info
+	@rm -rf html_report s21_decimal s21_lib_test html_report

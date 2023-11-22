@@ -1,26 +1,33 @@
 #include "s21_matrix.h"
 
 int s21_create_matrix(int rows, int columns, matrix_t *result) {
-  int error = 0;
+  int error = ALLOC_FAIL;
+  if (rows > 0 && columns > 0) {
+    result->columns = columns;
+    result->rows = rows;
 
-  result->rows = rows;
-  result->columns = columns;
-
-  result->matrix = (int)malloc(sizeof(int) * rows * columns);
-  int count = 0;
-  if (result->matrix != NULL) {
-    for (int i = 0; i < rows; i++) {
-      for (int j = 0; j < columns; j++) {
-        result->matrix[i][j] = ++count;
+    result->matrix = (double **)malloc(rows * sizeof(double *));
+    if (result->matrix) {
+      for (int i = 0; i < rows; ++i) {
+        if(!(result->matrix[i]=calloc(columns, sizeof(double *)))){
+          error=ALLOC_FAIL;
+          break;
+        }
       }
+      error=OK;
     }
-  } else
-    error = 1;
-
+  } else {
+    error = INCORRECT_MATRIX;
+  }
   return error;
 }
 
-void s21_remove_matrix(matrix_t *A) { free(A->matrix); }
+void s21_remove_matrix(matrix_t *A) {
+for(int i=0; i<A->rows; i++){
+  free(A->matrix[i]);
+}
+free(A->matrix);
+}
 
 int s21_eq_matrix(matrix_t *A, matrix_t *B) {
   int result = SUCCESS;
@@ -42,7 +49,7 @@ int s21_sum_matrix(matrix_t *A, matrix_t *B, matrix_t *result) {
   int error = 0;
 
   if (!(A->rows == B->rows && A->columns == B->columns)) {
-    result = 2;
+    error = 2;
   } else {
     for (int i = 0; i < A->rows; i++) {
       for (int j = 0; j < A->columns; j++) {
@@ -57,7 +64,7 @@ int s21_sub_matrix(matrix_t *A, matrix_t *B, matrix_t *result) {
   int error = 0;
 
   if (!(A->rows == B->rows && A->columns == B->columns)) {
-    result = 2;
+    error = 2;
   } else {
     for (int i = 0; i < A->rows; i++) {
       for (int j = 0; j < A->columns; j++) {
@@ -162,6 +169,7 @@ int s21_determinant(matrix_t *A, double *result) {
       }
     }
   }
+  return error;
 }
 
 int s21_calc_complements(matrix_t *A, matrix_t *result) {
