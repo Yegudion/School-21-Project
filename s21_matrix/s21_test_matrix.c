@@ -105,8 +105,12 @@ START_TEST(s21_remove_matrix_01) {
   int res = 0;
   matrix_t A = {0};
 
+  printf("Point:%p\n", A.matrix);
   res = s21_create_matrix(2, 2, &A);
+  printf("Point:%p\n", A.matrix);
   s21_remove_matrix(&A);
+  printf("Point:%p\n", A.matrix);
+  // free((A.matrix));
   if (A.matrix != NULL) {
     res = ERROR_INIT;
   }

@@ -1,4 +1,4 @@
-FLAGS = -Wall -Wextra -Werror -Wuninitialized -std=c11 
+FLAGS = -Wall -Wextra -Werror -Wuninitialized -fsanitize=address -std=c11 
 TESTFLAGS = -lcheck --coverage 
 SOURCES_FUN:=$(wildcard s21_*.c)
 
