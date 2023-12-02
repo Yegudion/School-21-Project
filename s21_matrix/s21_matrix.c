@@ -112,20 +112,22 @@ double mult_element(matrix_t *a, matrix_t *b, int i, int j) {
     result += a->matrix[i][k] * b->matrix[k][j];
   }
 
-  return 0;
+  return result;
 }
 
 int s21_mult_matrix(matrix_t *A, matrix_t *B, matrix_t *result) {
   int error = 0;
 
-  if (!(A->columns == B->rows)) {
+  if(A->columns == 0 || A->rows == 0 || B->rows == 0 || B->columns == 0){
+    error = 1;
+  }
+  else if (!(A->columns == B->rows)) {
     error = 2;
   } else {
-    result->rows = A->rows;
-    result->columns = B->columns;
+    s21_create_matrix(A->rows, B->columns, result);
 
     for (int i = 0; i < result->rows; i++) {
-      for (int j = 0; result->columns; j++) {
+      for (int j = 0; j < result->columns; j++) {
         result->matrix[i][j] = mult_element(A, B, i, j);
       }
     }
@@ -137,15 +139,18 @@ int s21_mult_matrix(matrix_t *A, matrix_t *B, matrix_t *result) {
 int s21_transpose(matrix_t *A, matrix_t *result) {
   int error = 0;
 
-  result->columns = A->rows;
-  result->rows = A->columns;
+
+  if(!(A->columns == 0 && A->rows ==0)){
+    error=1;
+  }else{
+  s21_create_matrix(A->rows, A->columns, result);
 
   for (int i = 0; i < A->rows; i++) {
     for (int j = 0; j < A->columns; j++) {
       result->matrix[j][i] = A->matrix[i][j];
     }
   }
-
+  }
   return error;
 }
 
