@@ -7,9 +7,9 @@
       "request": "launch",
       "args": [],
       "stopAtEntry": false,
-      "externalConsole": false,
-      "cwd": "/home/egor/github/School-21-Project/s21_matrix",
-      "program": "/home/egor/github/School-21-Project/s21_matrix/build/Debug/outDebug",
+      "externalConsole": true,
+      "cwd": "c:/yegors_data/github/School-21-Project/s21_matrix/testing",
+      "program": "c:/yegors_data/github/School-21-Project/s21_matrix/testing/build/Debug/outDebug",
       "MIMode": "gdb",
       "miDebuggerPath": "gdb",
       "setupCommands": [
