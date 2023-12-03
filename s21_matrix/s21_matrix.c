@@ -92,16 +92,15 @@ int s21_mult_number(matrix_t *A, double number, matrix_t *result) {
   int error = 0;
 
   if (!(A->rows && A->columns)) {
-    error=1;
-  }
-    else{
-          s21_create_matrix(A->rows, A->columns, result);
+    error = 1;
+  } else {
+    s21_create_matrix(A->rows, A->columns, result);
     for (int i = 0; i < A->rows; i++) {
       for (int j = 0; j < A->columns; j++) {
         result->matrix[i][j] = A->matrix[i][j] * number;
       }
     }
-    }
+  }
 
   return error;
 }
@@ -118,10 +117,9 @@ double mult_element(matrix_t *a, matrix_t *b, int i, int j) {
 int s21_mult_matrix(matrix_t *A, matrix_t *B, matrix_t *result) {
   int error = 0;
 
-  if(A->columns == 0 || A->rows == 0 || B->rows == 0 || B->columns == 0){
+  if (A->columns == 0 || A->rows == 0 || B->rows == 0 || B->columns == 0) {
     error = 1;
-  }
-  else if (!(A->columns == B->rows)) {
+  } else if (!(A->columns == B->rows)) {
     error = 2;
   } else {
     s21_create_matrix(A->rows, B->columns, result);
@@ -139,17 +137,16 @@ int s21_mult_matrix(matrix_t *A, matrix_t *B, matrix_t *result) {
 int s21_transpose(matrix_t *A, matrix_t *result) {
   int error = 0;
 
-
-  if(A->columns == 0 && A->rows ==0){
-    error=1;
-  }else{
+  if (A->columns == 0 && A->rows == 0) {
+    error = 1;
+  } else {
     s21_create_matrix(A->columns, A->rows, result);
 
-  for (int i = 0; i < A->rows; i++) {
-    for (int j = 0; j < A->columns; j++) {
-      result->matrix[j][i] = A->matrix[i][j];
+    for (int i = 0; i < A->rows; i++) {
+      for (int j = 0; j < A->columns; j++) {
+        result->matrix[j][i] = A->matrix[i][j];
+      }
     }
-  }
   }
   return error;
 }
@@ -174,15 +171,14 @@ void fill_lower_matrix(
 int s21_determinant(matrix_t *A, double *result) {
   int error = 0;
   *result = 0;
-  if(A->columns==0 && A->rows==0){
-    error=1;
-  }
-  else if(A->rows != A->columns){
+  if (A->columns == 0 && A->rows == 0) {
+    error = 1;
+  } else if (A->rows != A->columns) {
     error = 2;
   } else {
     int N = A->rows;  //размерность матрицы
-    if(N>2){
-    for (int k = 0; k < N; k++) {
+    if (N > 2) {
+      for (int k = 0; k < N; k++) {
         matrix_t A_low;
         double result_low = 0;
         s21_create_matrix(N - 1, N - 1, &A_low);
@@ -190,40 +186,42 @@ int s21_determinant(matrix_t *A, double *result) {
         s21_determinant(&A_low, &result_low);
         *result += (pow(-1, k + 2) * result_low * A->matrix[0][k]);
         s21_remove_matrix(&A_low);
-    }
-} else if (N == 2) {
-        *result = A->matrix[0][0] * A->matrix[1][1] -
-                  A->matrix[0][1] * A->matrix[1][0];
-      } else if (N == 1) {
-        *result = A->matrix[0][0];
-      } else if (N == 0) {
-        error = 1;
       }
+    } else if (N == 2) {
+      *result =
+          A->matrix[0][0] * A->matrix[1][1] - A->matrix[0][1] * A->matrix[1][0];
+    } else if (N == 1) {
+      *result = A->matrix[0][0];
+    } else if (N == 0) {
+      error = 1;
     }
+  }
 
- 
   return error;
 }
 
 int s21_calc_complements(matrix_t *A, matrix_t *result) {
   int error = 0;
-  if(A->rows==0 || A->columns ==0){
-    error=1;
-  }
-  else if (A->rows != A->columns) {
+  if (A->rows == 0 || A->columns == 0) {
+    error = 1;
+  } else if (A->rows != A->columns) {
     error = 2;
   } else {
     int N = A->rows;
     s21_create_matrix(N, N, result);
-    for (int i=0; i < N; i++) {
-      for (int j=0; j < N; j++) {
-        matrix_t det_low;
-        double det_result;
-        s21_create_matrix(N - 1, N - 1, &det_low);
-        fill_lower_matrix(A, &det_low, j, i);
-        s21_determinant(&det_low, &det_result);
-        result->matrix[i][j] = pow(-1, i + j) * det_result;
-        s21_remove_matrix(&det_low);
+    if (N == 1) {
+      result->matrix[0][0] = A->matrix[0][0];
+    } else {
+      for (int i = 0; i < N; i++) {
+        for (int j = 0; j < N; j++) {
+          matrix_t det_low;
+          double det_result;
+          s21_create_matrix(N - 1, N - 1, &det_low);
+          fill_lower_matrix(A, &det_low, j, i);
+          s21_determinant(&det_low, &det_result);
+          result->matrix[i][j] = pow(-1, i + j) * det_result;
+          s21_remove_matrix(&det_low);
+        }
       }
     }
   }
@@ -236,12 +234,12 @@ int s21_inverse_matrix(matrix_t *A, matrix_t *result) {
 
   int error = 0;
   s21_determinant(A, &det);
-  if (A->rows==0 || A->columns==0) {
+  if (A->rows == 0 || A->columns == 0) {
     error = 1;
 
-  } else if(det==0) {
-      error=2;
-  }else {
+  } else if (det == 0) {
+    error = 2;
+  } else {
     int N = A->rows;
 
     matrix_t complements_matrix;

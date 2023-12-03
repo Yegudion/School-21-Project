@@ -21,7 +21,7 @@ test: s21_matrix.a
 	./testing
 
 gcov_report:
-	@gcc $(TESTFLAGS) *.c ./test/*.c -o s21_lib_test $(TESTFLAGS) ./s21_lib_test
+	@gcc $(TESTFLAGS) *.c *.c -o s21_lib_test $(TESTFLAGS) ./s21_lib_test
 	@gcov -f $(SOURCES_FUN)
 	@lcov --no-external -t test -o coverage.info -c -d . 
 	@genhtml -o html_report coverage.info
