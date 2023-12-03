@@ -161,10 +161,13 @@ void fill_lower_matrix(
 
   for (int i = 0; i < A->rows; i++) {
     if (i == g) continue;
+    j_low = 0;
     for (int j = 0; j < A->columns; j++) {
       if (j == k) continue;
-      A_low->matrix[++i_low][++j_low] = A->matrix[i][j];
+      A_low->matrix[i_low][j_low] = A->matrix[i][j];
+      j_low++;
     }
+    i_low++;
   }
 }
 
@@ -178,8 +181,8 @@ int s21_determinant(matrix_t *A, double *result) {
     error = 2;
   } else {
     int N = A->rows;  //размерность матрицы
+    if(N>2){
     for (int k = 0; k < N; k++) {
-      if (N > 2) {
         matrix_t A_low;
         double result_low = 0;
         s21_create_matrix(N - 1, N - 1, &A_low);
@@ -187,7 +190,8 @@ int s21_determinant(matrix_t *A, double *result) {
         s21_determinant(&A_low, &result_low);
         *result += (pow(-1, k + 2) * result_low * A->matrix[0][k]);
         s21_remove_matrix(&A_low);
-      } else if (N == 2) {
+    }
+} else if (N == 2) {
         *result = A->matrix[0][0] * A->matrix[1][1] -
                   A->matrix[0][1] * A->matrix[1][0];
       } else if (N == 1) {
@@ -196,7 +200,6 @@ int s21_determinant(matrix_t *A, double *result) {
         error = 1;
       }
     }
-  }
 
  
   return error;
