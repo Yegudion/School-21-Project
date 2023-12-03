@@ -207,17 +207,20 @@ int s21_determinant(matrix_t *A, double *result) {
 
 int s21_calc_complements(matrix_t *A, matrix_t *result) {
   int error = 0;
-  if (A->rows != A->columns) {
+  if(A->rows==0 || A->columns ==0){
+    error=1;
+  }
+  else if (A->rows != A->columns) {
     error = 2;
   } else {
     int N = A->rows;
-
-    for (int i; i < N; i++) {
-      for (int j; j < N; j++) {
+    s21_create_matrix(N, N, result);
+    for (int i=0; i < N; i++) {
+      for (int j=0; j < N; j++) {
         matrix_t det_low;
         double det_result;
         s21_create_matrix(N - 1, N - 1, &det_low);
-        fill_lower_matrix(A, &det_low, i, j);
+        fill_lower_matrix(A, &det_low, j, i);
         s21_determinant(&det_low, &det_result);
         result->matrix[i][j] = pow(-1, i + j) * det_result;
         s21_remove_matrix(&det_low);
@@ -230,16 +233,30 @@ int s21_calc_complements(matrix_t *A, matrix_t *result) {
 
 int s21_inverse_matrix(matrix_t *A, matrix_t *result) {
   double det;
-  int error = s21_determinant(A, &det);
-  if (!(error == 0 && det != 0)) {
+
+  int error = 0;
+  s21_determinant(A, &det);
+  if (A->rows==0 || A->columns==0) {
     error = 1;
-  } else {
+
+  } else if(det==0) {
+      error=2;
+  }else {
     int N = A->rows;
-    s21_calc_complements(A, result);
-    s21_transpose(A, result);
+
+    matrix_t complements_matrix;
+    s21_create_matrix(N, N, &complements_matrix);
+
+    matrix_t tranpon_matrix;
+    s21_create_matrix(N, N, &tranpon_matrix);
+
+    s21_create_matrix(N, N, result);
+
+    s21_calc_complements(A, &complements_matrix);
+    s21_transpose(&complements_matrix, &tranpon_matrix);
     for (int i = 0; i < N; i++) {
       for (int j = 0; j < N; j++) {
-        result->matrix[i][j] = (1 / det) * result->matrix[i][j];
+        result->matrix[i][j] = (1 / det) * tranpon_matrix.matrix[i][j];
       }
     }
   }
