@@ -19,7 +19,7 @@ int check_and_clean(char str[N]) {
   for(int i=0; i<N; i++){
     if(str[i]='a' || (str[i]=='s' && str[i+1]=='q')){
         char sub_str[4]=strncpy(sub_str, str+i, 4);
-    }else if(str[i]='c' || str[i]=='s' || ){
+    }else if(str[i]='c' || str[i]=='s'){
         char sub_str[3]=strncpy(sub_str, str+i, 3);
 
 
