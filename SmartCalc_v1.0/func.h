@@ -8,7 +8,7 @@
 #define OK 1
 #define INCORRECT 0
 
-#define N 256 
+#define N 256
 
 //проверка и отчистка строки перед обработкой
 int check_and_clean(char str[N]);
