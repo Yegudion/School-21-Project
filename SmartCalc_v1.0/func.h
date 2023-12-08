@@ -5,8 +5,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define OK 1
-#define INCORRECT 0
+#define OK 0
+#define INCORRECT 1
 
 #define N 256
 
