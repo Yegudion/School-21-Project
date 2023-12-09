@@ -13,7 +13,7 @@ void clean_space(char str[N]) {
 }
 
 int check_and_clean(
-    char str[N]) { //добавить проверку чтобы перед точкой стояло число
+    char str[N]) { //добавить проверку чтобы перед точкой стояло число и минус 0 
   int error = OK;
   clean_space(str);
   int i = 0;
@@ -61,37 +61,42 @@ int check_and_clean(
   return error;
 }
 
-data functions_parser(char str[N], int *i) {
+data functions_parser(char str[N], int *k) {
   char sub_str[2] = {0};
-  data cell_data = {0, 0, 0};
+  data cell_data;
 
-  strncpy(sub_str, str + *i, 2);
-  while (functions[*i + 1] != '\0') {
-    if (functions[*i] == sub_str[*i % 2] &&
-        functions[*i + 1] == sub_str[*i % 2 + 1]) {
+  strncpy(sub_str, str + *k, 2);
+  int i=0;
+  while (functions[i + 1] != '\0') {
+    if (functions[i] == sub_str[0] &&
+        functions[i + 1] == sub_str[1]) {
 
       strcpy(cell_data.cell_type, sub_str);
       cell_data.priority = 4;
-      if (str[*i] == 'm')
+      if (str[i] == 'm')
         cell_data.priority = 2;
       cell_data.value = 0;
     }
     i++;
   }
+  while(str[*k]!='('){
+    (*k)++;
+  }
+  
   return cell_data;
 }
 
-data binary_parser(char str, int *i) {
-  data cell_data = {0, 0, 0};
-  cell_data.cell_type[0] = str[*i];
+data binary_parser(char str) {
+  data cell_data;
+  cell_data.cell_type[0] = str;
   cell_data.value = 0;
 
-  switch (str[*i]) {
+  switch (str) {
   case '(':
-    cell_data.priority = 4;
+    cell_data.priority = 5;
     break;
   case ')':
-    cell_data.priority = 4;
+    cell_data.priority = 6;
     break;
   case '^':
     cell_data.priority = 3;
@@ -100,23 +105,24 @@ data binary_parser(char str, int *i) {
     cell_data.priority = 2;
     break;
   }
-
   return cell_data;
 }
 
 struct cell *parser(char str[N]) {
   int i = 0;
-  struct cell *next;
+  struct cell *head=NULL;
+  
 
   while (str[i] != '\0') {
-    struct cell cells;
-    data cell_data = {0, 0, 0};
+    data cell_data;
+
 
     if (strchr(functions, (int)str[i])) {
-      functions_parser(str, &i);
+      cell_data=functions_parser(str, &i);
 
     } else if (strchr(binary, (int)str[i])) {
-      binary_parser(str[i], &i);
+      cell_data=binary_parser(str[i]);
+      i+=1;
 
     } else if (str[i] == 'x') {
       cell_data.value = 0;
@@ -125,16 +131,69 @@ struct cell *parser(char str[N]) {
 
       i++;
     } else {
-      cell_data.value = strtod(str + i, str);
+      cell_data.value = strtod(str + i, &str);
       cell_data.cell_type[0] = 'n';
       cell_data.priority = 0;
       i = 0;
     }
 
-    if (next) {
-      next = append_cell(cell_data, next);
+    if (head) {
+      head = append_cell(cell_data, head);
     } else {
-      next = create_cell(cell_data);
+      head = create_cell(cell_data);
     }
   }
+  reverse(&head);
+  return head;
+}
+
+double calc_RPN(struct cell *stack){
+  double result=0;
+  struct cell *num_stack;
+  struct cell *help_stack;
+  
+  while (stack->next)
+  {
+    int prior=stack->cell_data.priority;
+    int help_prior=10;
+
+    if(stack->cell_data.priority==0){
+      num_stack=append_cell(stack->cell_data, num_stack);
+    }else if(help_prior>=prior && prior!=6){
+      help_stack=append_cell(stack->cell_data, help_stack);
+      help_prior=prior;
+    }else if(help_prior<prior){
+      double num1 = pop(num_stack).value;
+      double num2 = pop(num_stack).value;
+
+      char type=stack->cell_data.cell_type;//криво работает char
+      switch (type)
+      {
+      case '+':
+        num1+=num2;
+        break;
+      case '-':
+        num1-=num2;
+        break;
+      case '*':
+        num1*=num2;
+        break;
+      case '/':
+        num1/=num2;
+      break;
+      default:
+        break;
+      }
+
+
+
+    }
+    
+  }
+  
+
+
+
+
+
 }

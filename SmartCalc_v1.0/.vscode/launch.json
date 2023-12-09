@@ -7,9 +7,9 @@
       "request": "launch",
       "args": [],
       "stopAtEntry": false,
-      "externalConsole": false,
-      "cwd": "/home/egor/github/School-21-Project/SmartCalc_v1.0",
-      "program": "/home/egor/github/School-21-Project/SmartCalc_v1.0/build/Debug/outDebug",
+      "externalConsole": true,
+      "cwd": "c:/yegors_data/github/School-21-Project/SmartCalc_v1.0",
+      "program": "c:/yegors_data/github/School-21-Project/SmartCalc_v1.0/build/Debug/outDebug",
       "MIMode": "gdb",
       "miDebuggerPath": "gdb",
       "setupCommands": [

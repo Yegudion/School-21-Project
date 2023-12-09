@@ -30,6 +30,8 @@ struct cell {
 
 struct cell *append_cell(data cell_data, struct cell *next);
 struct cell *create_cell(data cell_data);
+void reverse(struct cell **head);
+data pop(struct cell *stack);
 
 /*prioir:
 0: - x or numbers
@@ -46,5 +48,7 @@ int check_and_clean(char str[N]);
 void clean_space(char str[N]);
 
 struct cell *parser(char str[N]);
+
+double calc_RPN(struct cell *stack);
 
 #endif
