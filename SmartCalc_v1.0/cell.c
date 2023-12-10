@@ -46,18 +46,22 @@ void reverse(struct cell **head) {
 }
 
 data pop(struct cell *stack) {
-  // Если стек пустой, ничего не делаем
-  if (stack->next == NULL) {
-    return;
+  data value;
+  value.cell_type[0]='\0';
+  value.priority=-1;
+  value.value=0;
+  // // Если стек пустой, ничего не делаем
+  // if (stack->next == NULL) {
+  //   return nul;
+  // }
+  if(stack){
+  value = stack->cell_data;
+  struct cell *sub_sell=stack->next;
+  free(stack);
+
+  stack=sub_sell;
   }
 
-  // Сохраняем значение верхнего элемента
-  data value = stack->next->cell_data;
 
-  // Удаляем верхний элемент
-  free(stack->next);
-  stack->next = stack->next->next;
-
-  // Возвращаем значение верхнего элемента
   return value;
 }

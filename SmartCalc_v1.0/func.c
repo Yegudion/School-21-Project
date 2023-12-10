@@ -101,7 +101,13 @@ data binary_parser(char str) {
   case '^':
     cell_data.priority = 3;
     break;
-  default: // * / + -
+  case '+':
+    cell_data.priority = 1;
+    break;
+  case '-':
+    cell_data.priority = 1;
+    break;
+  default: // * /
     cell_data.priority = 2;
     break;
   }
@@ -148,26 +154,30 @@ struct cell *parser(char str[N]) {
 }
 
 double calc_RPN(struct cell *stack){
-  double result=0;
   struct cell *num_stack;
   struct cell *help_stack;
-  
+  int help_prior=10;
   while (stack->next)
   {
     int prior=stack->cell_data.priority;
-    int help_prior=10;
+    
 
     if(stack->cell_data.priority==0){
       num_stack=append_cell(stack->cell_data, num_stack);
-    }else if(help_prior>=prior && prior!=6){
+    }else if(help_prior>prior && prior!=6){
       help_stack=append_cell(stack->cell_data, help_stack);
       help_prior=prior;
-    }else if(help_prior<prior){
+    }else if(help_prior<=prior && prior<=2){
+
+      data num_data;
+
       double num1 = pop(num_stack).value;
       double num2 = pop(num_stack).value;
+      
 
-      char type=stack->cell_data.cell_type;//криво работает char
-      switch (type)
+      char type[2];
+      strcpy(type, pop(help_stack).cell_type);
+      switch (type[0])
       {
       case '+':
         num1+=num2;
@@ -185,15 +195,50 @@ double calc_RPN(struct cell *stack){
         break;
       }
 
+      num_data.value=num1;
+      num_data.priority=1;
 
+      help_stack=append_cell(stack->cell_data, help_stack);
+      num_stack=append_cell(num_data, num_stack);
+      }
+      stack=stack->next;
+    }
+    while (help_stack->next)
+    {
+      data num_data;
+      double num1 = pop(num_stack).value;
+      double num2 = pop(num_stack).value;
 
+      
+      char type[2];
+      strcpy(type, pop(help_stack).cell_type);
+      switch (type[0])
+      {
+      case '+':
+        num1+=num2;
+        break;
+      case '-':
+        num1-=num2;
+        break;
+      case '*':
+        num1*=num2;
+        break;
+      case '/':
+        num1/=num2;
+      break;
+      default:
+        break;
+      }
+
+      num_data.value=num1;
+      num_data.priority=1;
+
+      help_stack=append_cell(stack->cell_data, help_stack);
+      num_stack=append_cell(num_data, num_stack);
+
+      
     }
     
+    return num_stack->cell_data.value;
   }
   
-
-
-
-
-
-}
