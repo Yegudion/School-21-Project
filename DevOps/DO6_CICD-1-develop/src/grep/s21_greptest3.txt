@@ -1,0 +1,177 @@
+#include "s21_cat.h"
+
+#define BUFFER_SIZE 1
+
+int main(int argc, char* argv[]) {
+  static struct option long_options[] = {
+      {"number", no_argument, NULL, 'n'},
+      {"number-nonblank", no_argument, NULL, 'b'},
+      {"squeeze-blank", no_argument, NULL, 's'},
+  };
+
+  char* short_options = "eEnstTvb";
+
+  actions a = {.number = 0,
+               .number_nonblank = 0,
+               .show_ends = 0,
+               .show_nonprinting = 0,
+               .show_tabs = 0,
+               .squeeze_blank = 0};
+
+  int c;
+  while ((c = getopt_long(argc, argv, short_options, long_options, NULL)) !=
+         -1) {
+    switch (c) {
+      case 'n':
+        if (a.number_nonblank == 0) {
+          a.number = 1;
+        }
+        break;
+
+      case 'E':
+        a.show_ends = 1;
+        break;
+
+      case 'e':
+        a.show_ends = 1;
+        a.show_nonprinting = 1;
+        break;
+
+      case 's':
+        a.squeeze_blank = 1;
+        break;
+
+      case 'T':
+        a.show_tabs = 1;
+        break;
+
+      case 't':
+        a.show_tabs = 1;
+        a.show_nonprinting = 1;
+        break;
+
+      case 'b':
+        a.number = 0;
+        a.number_nonblank = 1;
+        break;
+
+      case 'v':
+        a.show_nonprinting = 1;
+        break;
+
+      default:
+        usage(argv[0]);
+        break;
+    }
+  }
+
+  int fd = STDIN_FILENO;
+  int opened_file = 0;
+  int count_starts_of_line = 1;
+  int start_of_line = 1;
+  if (argc <= 1) {
+    cat(&a, &fd, &count_starts_of_line, &start_of_line);
+  }
+
+  if (argc > 1) {
+    for (int i = 1; i < argc; i++) {
+      if (argv[i][0] == '-') {
+        // flag
+        if (!(i == argc - 1 && !(opened_file))) {
+          continue;
+        }
+      } else {
+        // file
+        fd = open(argv[i], O_RDONLY);
+        opened_file++;
+      }
+
+      if (fd == -1) {
+        write(STDERR_FILENO, "no file\n", 9);
+        exit(EXIT_FAILURE);
+      }
+
+      cat(&a, &fd, &count_starts_of_line, &start_of_line);
+    }
+  }
+
+  return 0;
+}
+
+void usage(char* program_name) {
+  printf("usage: %s [-eEnstTvb] [file ...]", program_name);
+
+  exit(EXIT_FAILURE);
+}
+
+void cat(actions* a, int* fd, int* count_starts_of_line, int* start_of_line) {
+  int count_squeeze_blank = 0;
+  ssize_t bytes_read;
+  char ch;
+  while ((bytes_read = read(*fd, &ch, BUFFER_SIZE))) {
+    // squeeze blank
+    if (count_squeeze_blank >= 2 && ch == '\n' && a->squeeze_blank) {
+      continue;
+    }
+
+    // number lines
+    if (a->number && *start_of_line) {
+      printf("%6d\t", *count_starts_of_line);
+      *start_of_line = 0;
+      *count_starts_of_line += 1;
+    }
+
+    // number non-empty
+    if (a->number_nonblank && *start_of_line && ch != '\n') {
+      printf("%6d\t", *count_starts_of_line);
+      *start_of_line = 0;
+      *count_starts_of_line += 1;
+    }
+
+    if (a->show_ends && ch == '\n') {
+      if (a->number_nonblank && *start_of_line) {
+        printf("      \t");
+      }
+
+      printf("$");
+    }
+
+
+    if (a->show_tabs && ch == '\t') { 
+      printf("^%c", ch + 64);
+      continue;
+    }
+
+    // show non printing as GNU cat for extended ASCII code
+    if (a->show_nonprinting) {
+      if (ch >= 0 && ch < 32 && ch != 9 && ch != 10) {
+        printf("^%c", ch + 64);
+        continue;
+      } else if (ch == 127) {
+        printf("^%c", ch - 64);
+        continue;
+      } else if (ch < -96) {
+        printf("M-^%c", ch + 192);
+        continue;
+      } else if (ch >= -96 && ch < -1) {
+        printf("M-%c", ch + 128);
+        continue;
+      } else if (ch == -1) {
+        printf("M-^%c", ch + 64);
+        continue;
+      }
+    }
+
+    // update counts on new line
+    if (ch == '\n') {
+      *start_of_line = 1;
+      count_squeeze_blank++;
+    } else {
+      count_squeeze_blank = 0;
+    }
+
+    printf("%c", ch);
+  }
+
+  close(*fd);
+}

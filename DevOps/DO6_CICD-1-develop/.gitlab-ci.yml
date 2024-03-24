@@ -1,0 +1,52 @@
+stages:
+  - build
+  - clang
+  - unit
+  - deploy
+
+
+build:
+  stage: build
+  script:
+    - cd src/cat 
+    - make 
+    - cd ../grep
+    - make
+  artifacts:
+    paths:
+      - src/cat/s21_cat
+      - src/grep/s21_grep
+    expire_in: 30 day
+  after_script:
+    - bash src/tg_notification.sh 
+
+style-test:
+  when: on_success
+  stage: clang
+  script: 
+  - cp materials/linters/.clang-format src/
+  - clang-format -i src/*/*.c src/*/*.h 
+  - clang-format -n -Werror src/*/*.c src/*/*.h 
+  after_script:
+    - bash src/tg_notification.sh 
+
+unit_tests:
+  when: on_success
+  stage: unit
+  script: 
+    - cd src/cat 
+    - make test
+    - cd ../grep
+    - make test
+  after_script:
+    - bash src/tg_notification.sh 
+
+deploy:
+  stage: deploy
+  when: on_success
+  script:
+    - cd src
+    - scp cat/s21_cat grep/s21_grep yegor@192.168.1.28:/home/yegor
+    - ssh yegor@192.168.1.28 mv /home/yegor/s21_* /usr/local/bin/
+  after_script:
+    - bash tg_notification.sh 
